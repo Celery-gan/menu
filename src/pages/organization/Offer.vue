@@ -1,14 +1,10 @@
 <template>
   <div>
-    <el-breadcrumb separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item>{{$t('m.dashboard')}}</el-breadcrumb-item>
-      <el-breadcrumb-item>{{$t('m.organize')}}</el-breadcrumb-item>
-      <el-breadcrumb-item>{{$t('m.offer')}}</el-breadcrumb-item>
-    </el-breadcrumb>
+    <comCrumb :crumbList="['dashboard','organize','offer']"></comCrumb>
     <div class="flex j-between">
       <div>
         <i class="el-icon-folder-opened offer-logo"></i>
-        <span class="fw">offer管理</span>
+        <span class="fw">{{$t('m.offer')}}</span>
       </div>
       <div>
         <el-button type="primary" size="mini">新建offer</el-button>
@@ -16,34 +12,71 @@
         <el-button type="primary" size="mini">导出</el-button>
       </div>
     </div>
-    <el-card>
-      <el-button type="primary" size="mini" round>待发offer(1)</el-button>
-      <el-button type="primary" size="mini" round>已发offer(1)</el-button>
-      <el-button type="primary" size="mini" round>已接受offer(1)</el-button>
-      <el-button type="primary" size="mini" round>已拒绝offer(1)</el-button>
-      <el-button type="primary" size="mini" round>已入职offer(1)</el-button>
-
+    <el-card style="margin-top:20px">
+      <el-button type="primary" size="mini" round>待发offer({{offerNmu[0]}})</el-button>
+      <el-button type="primary" size="mini" round>已发offer({{offerNmu[1]}})</el-button>
+      <el-button type="primary" size="mini" round>已接受offer({{offerNmu[2]}})</el-button>
+      <el-button type="primary" size="mini" round>已拒绝offer({{offerNmu[3]}})</el-button>
+      <el-button type="primary" size="mini" round>已入职offer({{offerNmu[4]}})</el-button>
       <el-table
         v-if="offerList.length>0"
         ref="multipleTable"
         :data="showList"
         tooltip-effect="dark"
+        :row-style="{height:nowheight}"
         style="width: 100%"
-        @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55"></el-table-column>
-        <el-table-column prop="name" label="姓名" align="center"></el-table-column>
-        <el-table-column prop="email" label="个人邮箱" align="center"></el-table-column>
-        <el-table-column prop="certificates" label="证件类型" align="center"></el-table-column>
-        <el-table-column prop="certificatesNum" label="证件号码" align="center"></el-table-column>
-        <el-table-column prop="certificatesNum" label="证件号码" align="center"></el-table-column>
-        <el-table-column prop="address" label="性别" align="center">
-          <template slot-scope="scope">
-            <div v-if="scope.row.gender==1">女</div>
-            <div v-else>男</div>
+        <el-table-column
+          v-for="(item) in showField"
+          :key="item.id"
+          :prop="item"
+          :label="$t(`m.${item}`)"
+          :show-overflow-tooltip="true"
+          align="center"
+        ></el-table-column>
+        <!--控制按钮 -->
+        <el-table-column width="40" align="center">
+          <template slot-scope="scope" slot="header">
+            <el-popover placement="bottom-end" width="200" trigger="click" v-model="showVisibel">
+              <div class="flex j-between b-bto">
+                <el-popover placement="left" width="120" trigger="click" v-model="AddVisible">
+                  <el-checkbox-group v-model="checkedshow">
+                    <el-checkbox
+                      class="lh-30 dis-b"
+                      v-for="item in hideField"
+                      :label="item"
+                      :key="item.id"
+                    >{{$t(`m.${item}`)}}</el-checkbox>
+                  </el-checkbox-group>
+                  <el-button type="primary" size="mini" @click="sureAdd" class="m-top ml">确认</el-button>
+                  <el-button type="text" slot="reference">添加显示字段</el-button>
+                </el-popover>
+
+                <el-popover placement="left" width="120" trigger="click" v-model="DelVisible">
+                  <el-checkbox-group v-model="checkedhide">
+                    <el-checkbox
+                      class="lh-30 dis-b"
+                      v-for="item in showField"
+                      :label="item"
+                      :key="item.id"
+                    >{{$t(`m.${item}`)}}</el-checkbox>
+                  </el-checkbox-group>
+                  <el-button type="primary" size="mini" class="m-top ml" @click="sureDel">确认</el-button>
+                  <el-button type="text" slot="reference">删除显示字段</el-button>
+                </el-popover>
+              </div>
+
+              <div class="lh-30">选择间距类型</div>
+              <div class="flex j-around">
+                <div @click="changeHeight(0)" :class="{'active-height':nowheight=='60px'}">紧凑</div>
+                <div @click="changeHeight(1)" :class="{'active-height':nowheight=='80px'}">适中</div>
+                <div @click="changeHeight(2)" :class="{'active-height':nowheight=='100px'}">宽松</div>
+              </div>
+              <i class="el-icon-setting" slot="reference"></i>
+            </el-popover>
           </template>
         </el-table-column>
-        <el-table-column :render-header="renderHeader" width="40" align="center"></el-table-column>
       </el-table>
       <el-pagination
         @size-change="handleSizeChange"
@@ -60,6 +93,7 @@
 </template>
 
 <script>
+import comCrumb from "../../components/common/comCrumb";
 import { createNamespacedHelpers } from "vuex";
 const organizeModule = createNamespacedHelpers("organize");
 const {
@@ -70,14 +104,22 @@ const {
 export default {
   data() {
     return {
+      AddVisible: false,
+      DelVisible: false,
+      showVisibel: false,
       currentPage: 1,
       currentSize: 10,
-      showList: []
+      showList: [],
+      nowheight: "60px",
+      checkedshow: [],
+      checkedhide: []
     };
   },
-  components: {},
+  components: { comCrumb },
   methods: {
     ...organizeActions(["getOffer"]),
+    ...organizeMutations(["addField", "delField"]),
+    // 得到当前显示数据
     getList() {
       let start = 0 + (this.currentPage - 1) * this.currentSize;
       let end = this.currentPage * this.currentSize;
@@ -88,40 +130,31 @@ export default {
     },
     // 切换每页条数
     handleSizeChange(val) {
-      console.log(`每页 ${val} 条`);
       this.currentSize = val;
       this.getList();
     },
     // 切换当前页
     handleCurrentChange(val) {
-      console.log(`当前页: ${val}`);
       this.currentPage = val;
       this.getList();
     },
-    toggleSelection(rows) {
-      if (rows) {
-        rows.forEach(row => {
-          this.$refs.multipleTable.toggleRowSelection(row);
-        });
-      } else {
-        this.$refs.multipleTable.clearSelection();
-      }
+    // 修改表格行高
+    changeHeight(val) {
+      this.nowheight = 60 + val * 20 + "px";
     },
-    handleSelectionChange(val) {
-      this.multipleSelection = val;
+    // 添加显示字段
+    sureAdd() {
+      this.addField(this.checkedshow);
+      this.AddVisible = false;
+      this.showVisibel = false;
+      this.checkedshow = [];
     },
-    // 表头插入导入按钮
-    renderHeader() {
-      // return (
-      //   <el-popover placement="right" width="400" trigger="click">
-      //     <div>sss</div>
-      //     <i class="el-icon-setting" on-click={() => this.editAble()}></i>
-      //   </el-popover>
-      // );
-      return <i class="el-icon-setting" on-click={() => this.editAble()}></i>;
-    },
-    editAble() {
-      console.log("object");
+    // 删除显示字段
+    sureDel() {
+      this.delField(this.checkedhide);
+      this.DelVisible = false;
+      this.showVisibel = false;
+      this.checkedhide = [];
     }
   },
   mounted() {
@@ -131,17 +164,28 @@ export default {
   },
   watch: {},
   computed: {
-    ...organizeState(["offerList"])
+    ...organizeState([
+      "offerList",
+      "allField",
+      "showField",
+      "hideField",
+      "offerNmu"
+    ])
   }
 };
 </script>
 
 <style scoped lang='scss'>
-.offer-logo {
-  display: inline-block;
-  background: #38ba72;
-  padding: 5px;
-  margin-right: 10px;
-  color: #fff;
+.b-bto {
+  border-bottom: 1px solid rgb(247, 247, 247);
+}
+.dis-b {
+  display: block;
+}
+.ml {
+  margin-left: 80px;
+}
+.active-height {
+  color: #409eff;
 }
 </style>

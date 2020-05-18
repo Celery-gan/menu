@@ -1,5 +1,5 @@
 <template>
-  <div style="height:444px  ;width: 49%;">
+  <div class="view-dynamic" ref="box">
     <div class="person-dynamic">
       <div class="dynamic-title flex j-between">
         <div>个人动态</div>
@@ -42,7 +42,7 @@
             <el-option label="个人心情" value="个人心情"></el-option>
             <el-option label="工作汇报" value="工作汇报"></el-option>
             <el-option label="公司相关" value="公司相关"></el-option>
-            <el-option label="其他事物" value="其他事物"></el-option>
+            <el-option label="其他事物" value="其他事物"></el-option> 
           </el-select>
         </el-form-item>
         <el-form-item v-if="showReport" label="相关汇报人">
@@ -87,7 +87,7 @@ export default {
   data() {
     return {
       checkDate: "",
-      showList: [],
+      // showList: [],
       dynamicVisible: false,
       showReport: false,
       dynamicform: {
@@ -100,16 +100,10 @@ export default {
   components: {},
   methods: {
     ...homeActions(["addOneDynamic", "getDynamic", "getReport"]),
+    ...homeMutations(["changeDynamic"]),
     // 修改日期 获取对应动态
     changeDate(val) {
-      if (this.dynamicList.length > 0) {
-        this.showList = this.dynamicList.filter(item => {
-          return val == this.$dayjs(item.date).format("YYYY-MM-DD");
-        });
-        this.showList.map(item => {
-          item.times = this.$dayjs(item.date).format("YYYY年MM月DD日");
-        });
-      }
+      this.changeDynamic(val);
     },
     // 切换动态类型 当类型为工作汇报时 reportUsers选择框显示
     changeClass(val) {
@@ -143,10 +137,11 @@ export default {
   mounted() {
     this.getDynamic();
     this.getReport();
+    this.checkDate = this.$dayjs().format("YYYY-MM-DD");
   },
   watch: {},
   computed: {
-    ...homeState(["dynamicList", "reportList"]),
+    ...homeState(["dynamicList", "reportList", "showList"]),
     ...userState(["userInfo"])
   }
 };
@@ -177,4 +172,16 @@ export default {
 .mt-10 {
   margin-top: 10px;
 }
+.view-dynamic {
+  height: 452px;
+  width: 49.3%;
+  overflow: scroll;
+}
+/*整个滚动条样式*/
+.view-dynamic::-webkit-scrollbar {
+  width: 6px;
+  height: 0px;
+}
+
+/*设置滚动条上的滚动滑块样式*/
 </style>

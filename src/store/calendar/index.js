@@ -57,16 +57,13 @@ export default {
         },
         setEvents(state, data) {
             state.events = data
-            console.log(state.events);
         }
 
     },
     actions: {
         // 添加日程
         async addCalendar({ commit, dispatch }, params) {
-            console.log(params);
             let res = await api.addCalendar(params)
-            console.log(res);
             if (res.code == 200) {
                 Message.success(res.msg)
                 dispatch("getCalendar")
@@ -77,39 +74,38 @@ export default {
         // 获取日程
         async getCalendar({ commit }, params) {
             let res = await api.getCalendar()
-            console.log(res);
             if (res.code == 200) {
                 let arr = []
                 res.data.map(item => {
-                        let obj = {
-                            id: item._id,
-                            start: item.startTime,
-                            end: item.endTime,
-                            title: item.schedule,
-                            users: item.users
-                        };
-                        arr.push(obj)
-                    })
-                    // console.log(arr);
+                    let obj = {
+                        id: item._id,
+                        start: item.startTime,
+                        end: item.endTime,
+                        title: item.schedule,
+                        users: item.users
+                    };
+                    arr.push(obj)
+                })
                 arr.map(item => {
                     // 得到下一周事件
                     let addTime = Dayjs(item.start).add(7, 'day')
                     let nextWeek = Dayjs(addTime.$d).format("YYYY-MM-DD")
-                        // 判断列表中对应下一周是否有事件
+                        // 判断列表中对应下一周是否有事件 
                     let flag = arr.some(function(item1) {
-                            return Dayjs(item1.start).format("YYYY-MM-DD") == nextWeek
-                        })
-                        // console.log(item.start + flag);
+                        return Dayjs(item1.start).format("YYYY-MM-DD") == nextWeek
+                    })
                     if (!flag) {
-                        arr.push({
-                            editable: false,
-                            backgroundColor: "#fddeff !important",
-                            start: nextWeek,
-                            title: `重复上周`,
-                        })
+                        // 判断列表中对应下周的时间在当前时间之后 当前时间<下一周
+                        if (Dayjs().format("YYYY-MM-DD") <= nextWeek) {
+                            arr.push({
+                                editable: false,
+                                backgroundColor: "#fddeff !important",
+                                start: nextWeek,
+                                title: `重复上周`,
+                            })
+                        }
                     }
                 })
-                console.log(arr);
                 commit("setEvents", arr)
             } else if (res.code == 500) {
                 commit("setEvents", [])

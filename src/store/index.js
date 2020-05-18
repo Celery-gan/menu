@@ -5,6 +5,7 @@ import home from "./home"
 import calendar from "./calendar"
 import mailList from "./mailList"
 import organize from "./organize"
+import form from "./form"
 Vue.use(Vuex)
 
 // 只放公共的状态
@@ -17,6 +18,7 @@ export default new Vuex.Store({
         home,
         calendar,
         mailList,
-        organize
+        organize,
+        form
     }
 })

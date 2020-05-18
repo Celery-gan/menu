@@ -1,9 +1,7 @@
 <template>
   <div>
-    <el-breadcrumb separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item>{{$t('m.dashboard')}}</el-breadcrumb-item>
-      <el-breadcrumb-item>{{$t('m.mailList')}}</el-breadcrumb-item>
-    </el-breadcrumb>
+    <comCrumb :crumbList="['dashboard','mailList']"></comCrumb>
+
     <el-container>
       <el-aside width="200px">
         <el-tree :data="treeData" :props="defaultProps" @node-click="checkTree"></el-tree>
@@ -47,6 +45,7 @@
 </template>
 
 <script>
+import comCrumb from "../../components/common/comCrumb";
 import { createNamespacedHelpers } from "vuex";
 const mailListModule = createNamespacedHelpers("mailList");
 const {
@@ -63,7 +62,7 @@ export default {
       }
     };
   },
-  components: {},
+  components: { comCrumb },
   methods: {
     ...mailListActions(["getTreeData", "getMailList"]),
     ...mailListMutations(["changeList"]),

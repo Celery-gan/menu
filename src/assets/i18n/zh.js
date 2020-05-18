@@ -18,4 +18,25 @@ export const m = {
     userInfo: '人员信息',
     payMent: '薪酬管理',
     stepForm: '分步表单',
+    checkForm: '查看账单',
+
+    name: "姓名",
+    phone: "手机",
+    tel: "电话",
+    email: "个人邮箱",
+    gender: "性别",
+    qq: "QQ",
+    position: "职位",
+    nativePlace: "籍贯",
+    marriage: "婚姻状态",
+    certificates: "证件类型",
+    certificatesNum: "证件号码",
+    birthday: "出生日期",
+    status: "offer状态",
+    education: "学历",
+    createTime: "入职时间",
+    nation: "民族",
+    workAddress: "工作地点",
+    department: "部门"
+
 }

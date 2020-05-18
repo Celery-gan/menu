@@ -79,7 +79,7 @@ export default {
     /**
      * 获取动态
      */
-    getDynamics() {
+    getDynamic() {
         return service.get('/getDynamic')
     },
     //     15.发布动态(post)
@@ -139,9 +139,30 @@ export default {
         return service.get('/getTreeData')
     },
     /**
+     * 获得通讯录数据
+     */
+    getMailList() {
+        return service.get('/getMailList')
+    },
+    /**
      * 获得offer管理数据
      */
     getOffer() {
         return service.get('/getOffer')
+    },
+    /**
+     * 获取员工信息
+     */
+    getUserInfo() {
+        return service.get('/userInfo')
+    },
+    /**
+     * 获取薪酬管理信息
+     */
+    getPay() {
+        return service.get('/pay')
+    },
+    upload() {
+        return service.post('/upload/image')
     }
 }

@@ -29,7 +29,7 @@ export default {
                         // 如果点击的是 二级标签 例如北方区域中心
                         if (data == item1.label) {
                             // 如果二级标签下 没有三级标签
-                            console.log(item1);
+                            // console.log(item1);
                             if (item1.children == undefined) {
                                 str = data
                             } else { // 如果二级标签下 有三级标签
@@ -111,7 +111,7 @@ export default {
             if (str == '') {
                 state.showList = state.mailData
             } else {
-                console.log(str);
+                // console.log(str);
                 state.showList = state.mailData.filter(item => {
                     return str.indexOf(item.department) != "-1"
                 })
@@ -130,7 +130,6 @@ export default {
         // 获得通讯录全部数据
         async getMailList({ commit }) {
             let res = await api.getMailList()
-                // console.log(res);
             if (res.code === 200) {
                 commit("setMailData", res.data)
             }

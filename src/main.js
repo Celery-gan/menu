@@ -16,6 +16,9 @@ Vue.use(VCharts)
 import VueClipboard from 'vue-clipboard2'
 Vue.use(VueClipboard)
 
+import Print from 'vue-print-nb'
+Vue.use(Print);
+
 import VueI18n from 'vue-i18n'
 Vue.use(VueI18n)
 const i18n = new VueI18n({
@@ -27,6 +30,10 @@ const i18n = new VueI18n({
     }
 })
 
+import IntroJs from 'intro.js'
+import 'intro.js/introjs.css';
+
+Vue.use(IntroJs);
 
 Vue.use(ElementUI)
 Vue.prototype.$dayjs = dayjs

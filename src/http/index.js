@@ -45,7 +45,6 @@ service.interceptors.response.use(
         return response.data
     },
     err => {
-        console.log(err.response);
         if (err.response.code === 401) {
             router.push("/login")
         }
@@ -61,6 +60,10 @@ service.interceptors.response.use(
             // 提示服务器维护
             Message.error('服务器维护')
         }
+        if (err.response.status === 401) {
+            router.push("/login")
+        }
+
         NProgress.done()
         return Promise.reject(err.response)
     }

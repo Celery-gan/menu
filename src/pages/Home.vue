@@ -19,12 +19,12 @@
             v-if="activePro==index"
             :startVal="0"
             :endVal="item.money"
-            :duration="500"
+            :duration="1000"
             prefix="￥ "
           ></countTo>
           <div v-else>￥ {{(item.money-item.money%1000)/1000}},{{ item.money%1000}}</div>
         </div>
-        <div class="wrap_01" style="height:80px;">
+        <div class="wrap_01" style="height:80px;" :id="`progress${index}`">
           <CircleProgress
             :id="item.id"
             :width="80"
@@ -34,6 +34,7 @@
             :progress="item.value"
             :isAnimation="true"
             duration="500"
+            style="position:relative"
           >
             <div v-if="activePro==index" class="slot fs-12">
               <div>完成率</div>
@@ -45,7 +46,7 @@
       </div>
     </div>
     <!-- 利润 + 个人动态 -->
-    <div class="flex ai-c">
+    <div class="flex ai-c j-between">
       <!-- 利润 -->
       <div class="city-profit">
         <div class="profit-title">利润(万)</div>
@@ -57,7 +58,7 @@
       <home-dynamic></home-dynamic>
     </div>
     <!-- 网站问卷调查 -->
-    <el-card class="box-card">
+    <el-card class="m-t-10">
       <div slot="header">
         <span>网站问卷调查</span>
       </div>
@@ -132,8 +133,7 @@ export default {
       norbgColor: "#dce2e6", //  一般项圆环颜色
       activePro: 0, // 当前选中项
       barcList: ["#5eb0fe", "#80e313", "#f2ae57"], // 圆环颜色列表
-      bgcList: ["#a9d0ff", "#d3f4af", "#ffe8cc"], // 圆环背景色列表
-      fill: { gradient: ["red", "green", "blue"] },
+      bgcList: ["#a9d0ff", "#d3f4af", "#f+fe8cc"], // 圆环背景色列表
       dialogVisible: false,
       lookUrl: "https://www.baidu.com/"
     };
@@ -142,10 +142,22 @@ export default {
     ...homeActions(["getProgress", "getCityValue", "getquestion"]),
     // 切换当前progress
     changeActive(val) {
-      this.activePro = val;
-      this.bortop = `6px solid ${this.barcList[val]}`;
-      this.barColor = this.barcList[val];
-      this.backgroundColor = this.bgcList[val];
+      if (this.activePro !== val) {
+        this.progress(this.activePro);
+        this.progress(val);
+        this.activePro = val;
+        this.bortop = `6px solid ${this.barcList[val]}`;
+        this.barColor = this.barcList[val];
+        this.backgroundColor = this.bgcList[val];
+      }
+    },
+    // 重新加载进度条
+    progress(index) {
+      let a = `#progress${index}`;
+      document.querySelector(a).style.display = "none";
+      setTimeout(() => {
+        document.querySelector(a).style.display = "block";
+      }, 10);
     },
     // 打开dialog
     lookDetail(row) {
@@ -153,7 +165,7 @@ export default {
       // 二维码内容,一般是由后台返回的跳转链接,这里是写死的一个链接
       this.lookUrl = row;
       // 使用$nextTick确保数据渲染
-      this.$nextTick(function() {
+      this.$nextTick(() => {
         this.crateQrcode();
       });
     },
@@ -166,10 +178,7 @@ export default {
       this.qr = new QRCode("qrcode", {
         width: 200,
         height: 200, // 高度
-        text: this.lookUrl, // 二维码内容
-        render: "canvas", // 设置渲染方式（有两种方式 table和canvas，默认是canvas）
-        background: "#f0f",
-        foreground: "#ff0"
+        text: this.lookUrl // 二维码内容
       });
     },
     // 点击复制
@@ -197,7 +206,7 @@ export default {
 
 <style scoped lang='scss'>
 .pro-box {
-  padding: 30px 60px 60px;
+  padding: 30px 110px 60px;
 }
 /* 圆环样式  */
 .wrap {
@@ -255,9 +264,10 @@ export default {
 }
 .city-profit {
   border: 1px solid #ddd;
-  width: 49%;
+  width: 50.5%;
 }
 .profit-title {
+  line-height: 27px;
   padding: 10px 20px;
   border-bottom: 1px solid #ddd;
 }

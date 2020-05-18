@@ -124,6 +124,17 @@ const routes = [{
                 import ('../pages/form/StepForm')
         }]
     },
+    // 分步表单
+    {
+        path: '/',
+        component: comHome,
+        children: [{
+            path: '/form/checkForm',
+            name: 'form/checkForm',
+            component: () =>
+                import ('../pages/form/CheckForm')
+        }]
+    },
 ]
 
 const isPro = process.env.NODE_ENV === 'production'
@@ -139,21 +150,21 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
     let token = localStorage.getItem("adminToken")
     if (token == null) {
-        if (to.path == "/login" || to.path == "/regiest" || to.path == "findPwd") {
+        if (to.path == "/login" || to.path == "/regiest" || to.path == "/findPwd") {
             next()
         } else {
             next("/login")
         }
     } else {
-        // if (to.path !== "/lockView") {
-        //     if (sessionStorage.getItem("isUnLock") == "true") {
-        //         next()
-        //     } else {
-        //         next("/lockView")
-        //     }
-        // } else {
-        next()
-            // }
+        if (to.path !== "/lockView") {
+            if (sessionStorage.getItem("isUnLock") == "true") {
+                next()
+            } else {
+                next("/lockView")
+            }
+        } else {
+            next()
+        }
     }
 })
 

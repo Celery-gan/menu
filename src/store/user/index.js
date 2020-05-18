@@ -140,6 +140,11 @@ export default {
         // 侧边菜单
         setAsid(state, data) {
             state.asidList = data
+            state.asidList.map(item => {
+                if (item.url == '/home') {
+                    item.url = '/'
+                }
+            })
         }
     },
     actions: {
@@ -150,7 +155,6 @@ export default {
         },
         // 账号密码登录
         async goLogin({ commit, dispatch }, params) {
-            // console.log(params);
             let res = await api.userLogin({
                 username: params.username,
                 password: params.password,
@@ -162,19 +166,17 @@ export default {
                 Message.success(res.msg)
                 router.push("/")
                 commit("FormatData", "ruleForm")
+                    // 设置默认锁屏密码和解锁状态
             } else {
                 Message.error(res.msg)
                 dispatch("getVerify")
                 commit("clearCode")
             }
-
         },
         // 手机号登录
         async PhoneLogin({ commit }, params) {
-            // console.log(params);
             commit("FormatData", "ruleFormT")
             let res = await api.phoneLogin(params)
-                // console.log(res);
                 // 登录成功 res.code == 200 保存用户信息
             if (res.code == 200) {
                 localStorage.setItem("adminUser", JSON.stringify(res.data))
@@ -240,6 +242,7 @@ export default {
         async getMenus({ commit }) {
             let res = await api.getMenus()
             commit("setAsid", res.data)
+
         },
         // 退出登录
         async logOut({ commit }) {

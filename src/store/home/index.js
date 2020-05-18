@@ -1,6 +1,7 @@
 import api from '../../http/api'
 import { Message } from 'element-ui'
 import router from '../../router'
+import Dayjs from 'dayjs'
 
 export default {
     namespaced: true,
@@ -24,7 +25,8 @@ export default {
         // 相关汇报人列表
         reportList: [],
         // 网站调查列表
-        questionList: []
+        questionList: [],
+        showList: []
     },
     mutations: {
         setProgress(state, data) {
@@ -35,9 +37,27 @@ export default {
         },
         setDynamic(state, data) {
             state.dynamicList = data
+            if (state.dynamicList.length > 0) {
+                // 过滤出当日数据
+                state.showList = state.dynamicList.filter(item => {
+                    return Dayjs().format("YYYY-MM-DD") == Dayjs(item.date).format("YYYY-MM-DD");
+                });
+                // 当日数据日期为 yyyy-mm-dd 切换显示为 YYYY年MM月DD日
+                state.showList.map(item => {
+                    item.times = Dayjs(item.date).format("YYYY年MM月DD日");
+                });
+            }
         },
-        addDynamic(state, data) {
-            state.dynamicList.push(data)
+        // 点击切换日期 显示数据切换
+        changeDynamic(state, data) {
+            if (state.dynamicList.length > 0) {
+                state.showList = state.dynamicList.filter(item => {
+                    return data == Dayjs(item.date).format("YYYY-MM-DD");
+                });
+                state.showList.map(item => {
+                    item.times = Dayjs(item.date).format("YYYY年MM月DD日");
+                });
+            }
         },
         setReport(state, data) {
             state.reportList = data
@@ -63,7 +83,7 @@ export default {
         },
         // 获得动态
         async getDynamic({ commit }) {
-            let res = await api.getDynamics()
+            let res = await api.getDynamic()
             if (res.code == 200) {
                 commit("setDynamic", res.data)
             }
@@ -76,18 +96,17 @@ export default {
             }
         },
         // 添加动态
-        async addOneDynamic({ commit }, params) {
+        async addOneDynamic({ commit, dispatch }, params) {
             console.log(params);
             let res = await api.addOneDynamic(params)
             if (res.code === 200) {
                 Message.success(res.msg)
-                commit("addDynamic", res.data)
+                dispatch("getDynamic")
             }
         },
         // 网站调查
         async getquestion({ commit }) {
             let res = await api.getquestion()
-            console.log(res);
             if (res.code == 200) {
                 commit("setQuestion", res.data)
             }

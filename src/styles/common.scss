@@ -18,6 +18,10 @@
     flex: 1
 }
 
+.f-3 {
+    flex: 3
+}
+
 .ai-c {
     align-items: center;
 }
@@ -48,6 +52,10 @@
 
 .fs-22 {
     font-size: 22px;
+}
+
+.fs-24 {
+    font-size: 24px;
 }
 
 .fs-32 {
@@ -104,4 +112,34 @@
 
 .el-breadcrumb {
     margin-bottom: 30px;
+}
+
+.overFlow {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.m-t-10 {
+    margin-top: 10px;
+}
+
+.m-top {
+    margin-top: 20px;
+}
+
+.m-r-10 {
+    margin-right: 10px;
+}
+
+.m-auto {
+    margin: 0 auto
+}
+
+.offer-logo {
+    display: inline-block;
+    background: #38ba72;
+    padding: 5px;
+    margin-right: 10px;
+    color: #fff;
 }

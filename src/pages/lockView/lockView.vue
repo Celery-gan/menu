@@ -20,7 +20,7 @@ export default {
     return {
       unlockWord: "",
       lockWords: "",
-      isLock: true,
+      isLock: false,
       flag: false
     };
   },
@@ -45,15 +45,7 @@ export default {
   },
   mounted() {
     this.lockWords = sessionStorage.getItem("lockWord");
-  },
-  beforeRouteLeave(to, from, next) {
-    if (to.path !== "/lockView") {
-      if (sessionStorage.getItem("isUnLock") == "true") {
-        next();
-      } else {
-        next(false);
-      }
-    }
+    sessionStorage.setItem("isUnLock", this.isLock);
   },
   watch: {},
   computed: {}

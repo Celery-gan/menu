@@ -1,153 +1,201 @@
 、<template>
   <div>
-    <lunar-full-calendar
-      :events="events"
-      ref="calendar"
-      @event-selected="eventSelected"
-      :config="config"
-      @day-click="dayClick"
-    ></lunar-full-calendar>
+    <comCrumb :crumbList="['dashboard','organize','payMent']"></comCrumb>
+    <!--  -->
+    <div>
+      <i class="el-icon-price-tag offer-logo"></i>
+      <span class="fw">{{$t('m.payMent')}}</span>
+    </div>
+    <div class="flex j-between month-title">
+      <div class="fw fs-24" v-if="months==null">Invalid Date 薪酬预算</div>
+      <div class="fw fs-24" v-else>{{nowMonth}} 薪酬预算</div>
+      <el-date-picker v-model="months" type="month" placeholder="选择月" @change="changeMonth"></el-date-picker>
+    </div>
+    <!--  -->
+    <div class="pay-tips">如果有更多的渠道请自行添加, 所有添加的渠道会显示在CRM系统中</div>
+    <el-card class="box-card">
+      <div class="fs-24 fw">薪资结构</div>
+
+      <el-table :data="payList" border style="width: 100%">
+        <!-- 薪资构成 -->
+        <el-table-column label="薪资构成" align="center">
+          <template slot-scope="scope">
+            <el-input
+              v-if="scope.row.name == null"
+              @blur="sureName(scope.row)"
+              @keyup.enter.native="sureName(scope.row)"
+              v-model="addname"
+            ></el-input>
+            <div v-else>{{scope.row.name}}</div>
+          </template>
+        </el-table-column>
+        <!-- 计划支出 -->
+        <el-table-column label="计划支出(元)" align="center">
+          <template slot-scope="scope">
+            <el-input
+              v-if="showName.indexOf(scope.row.name)!=-1 || scope.row.planMoney==null"
+              @blur="sureMony(scope.row)"
+              @keyup.enter.native="surethisMonth(scope.row)"
+              v-model="scope.row.planMoney"
+            ></el-input>
+            <div v-else @click="editMoney(scope.row)">{{Number(scope.row.planMoney)}}</div>
+          </template>
+        </el-table-column>
+        <!-- 实际支出 -->
+        <el-table-column prop="thisMonth" label="实际支出(元)" align="center">
+          <template slot-scope="scope">
+            <el-input
+              v-if="showMonth.indexOf(scope.row.name)!=-1 || scope.row.thisMonth==null"
+              @blur="surethisMonth(scope.row)"
+              @keyup.enter.native="surethisMonth(scope.row)"
+              v-model="scope.row.thisMonth"
+            ></el-input>
+            <div v-else @click="editthisMonth(scope.row)">{{Number(scope.row.thisMonth)}}</div>
+          </template>
+        </el-table-column>
+        <el-table-column></el-table-column>
+        <el-table-column></el-table-column>
+        <el-table-column></el-table-column>
+        <!-- 上月计划 -->
+        <el-table-column label="上月计划(元)" align="center">
+          <template slot-scope="scope">
+            <el-link disabled>{{scope.row.actualMoney}}</el-link>
+          </template>
+        </el-table-column>
+        <!-- 上月实际 -->
+        <el-table-column label="上月实际(元)" align="center">
+          <template slot-scope="scope">
+            <el-link disabled>{{scope.row.lastMonth}}</el-link>
+          </template>
+        </el-table-column>
+      </el-table>
+      <!-- 添加更多 + 总计 -->
+      <el-button class="add-more" type="primary" @click="addPay">添加更多</el-button>
+      <div class="flex ta-c c-blue">
+        <div class="f-1">总计</div>
+        <div class="f-1">{{paySum[0]}}</div>
+        <div class="f-1">{{paySum[1]}}</div>
+        <div class="f-3"></div>
+        <div class="f-1">{{paySum[2]}}</div>
+        <div class="f-1">{{paySum[3]}}</div>
+      </div>
+    </el-card>
   </div>
 </template>
 
 <script>
-import { LunarFullCalendar } from "vue-lunar-full-calendar";
+import comCrumb from "../../components/common/comCrumb";
+import { createNamespacedHelpers } from "vuex";
+const organizeModule = createNamespacedHelpers("organize");
+const {
+  mapActions: organizeActions,
+  mapState: organizeState,
+  mapMutations: organizeMutations
+} = organizeModule;
 export default {
   data() {
-    let self = this;
     return {
-      events: [
-        {
-          id: 1,
-          title: "数据1",
-          allDay: true,
-          start: new Date()
-        },
-        {
-          id: 2,
-          title: "数据2",
-          start: new Date().getTime() + 24 * 60 * 60 * 1000,
-          end: new Date().getTime() + 2 * 24 * 60 * 60 * 1000
-        },
-        {
-          id: 3,
-          title: "数据3",
-          start: new Date().getTime() - 3 * 24 * 60 * 60 * 1000
-        },
-        {
-          id: 4,
-          title: "数据4（增加中国农历、24节气和节假日的问题）",
-          start: new Date(),
-          end: new Date().getTime() + 30 * 24 * 60 * 60 * 1000
-        },
-        {
-          id: 5,
-          title:
-            "数据5（Increase the functions of Chinese lunar calendar, 24 solar terms and holidays）",
-          start: new Date(),
-          end: new Date().getTime() + 30 * 24 * 60 * 60 * 1000
-        },
-        {
-          id: 6,
-          title:
-            "数据6（增加中国农历、24节气和节假日的问题Increase the functions of Chinese lunar calendar, 24 solar terms and holidays）",
-          start: new Date() - 30 * 24 * 60 * 60 * 1000,
-          end: new Date().getTime()
-        }
-      ],
-      config: {
-        // lunarCalendar
-        // Control whether the Chinese calendar shows true, unrealistic flase, default true.（lunarCalendar控制是否显示中国农历、显示的为true，隐藏为flase，默认为true）
-        lunarCalendar: true,
-        height: "parent",
-        locale: "zh-cn",
-        buttonText: {
-          today: "今天",
-          month: "月",
-          week: "周",
-          day: "日"
-        },
-        header: {
-          left: "prev,next, today",
-          center: "title",
-          right: "hide, custom, month,agendaWeek,agendaDay"
-        },
-        eventOrder: "index", // 这个是控制事件排序的功能，意思是 按照字段 事件数据中index来排序
-        eventLimitClick: "day", //点击今天日列表图
-        eventLimit: true, // 一天中显示多少条事件，多了隐藏
-        firstDay: 0, // 控制周一周日那个在前面
-        defaultView: "month",
-        allDaySlot: true, // agenda视图下是否显示all-day
-        allDayText: "全天", // agenda视图下all-day的显示文本
-        timezone: "local", // 时区默认本地的
-        slotLabelFormat: "HH:mm", // 周视图和日视同的左侧时间显示
-        viewRender(view, element) {
-          self.viewRender(view, element);
-        },
-        customButtons: {
-          // 新增按钮
-          hide: {
-            text: "隐藏农历",
-            click: function() {
-              self.$refs.calendar.fireMethod("option", {
-                lunarCalendar: false
-              });
-              self.$refs.calendar.fireMethod("option", {
-                header: {
-                  left: "prev,next, today",
-                  center: "title",
-                  right: "show, custom, month,agendaWeek,agendaDay"
-                }
-              });
-            }
-          },
-          show: {
-            text: "显示农历",
-            click: function() {
-              self.$refs.calendar.fireMethod("option", {
-                lunarCalendar: true
-              });
-              self.$refs.calendar.fireMethod("option", {
-                header: {
-                  left: "prev,next, today",
-                  center: "title",
-                  right: "hide, custom, month,agendaWeek,agendaDay"
-                }
-              });
-            }
-          }
-        }
-      }
+      // 选择的月份
+      nowMonth: "2020年05月",
+      months: "",
+      showName: [],
+      showMonth: [],
+      addInfo: {},
+      addname: ""
     };
   },
-  components: { LunarFullCalendar },
+  components: { comCrumb },
   methods: {
-    // 注释的是功能是可以修改对应的功能值属性，比如设置  eventLimit为 false
-    //  this.$refs.calendar.fireMethod('option',{
-    //      eventLimit :false
-    //  })
-    dayClick(date, jsEvent, view) {
-      // 点击当天的事件
-      alert("农历数据：" + JSON.stringify(window.lunar(date._d)));
-      console.log(date, jsEvent, "dayClick");
+    ...organizeActions(["getPay"]),
+    ...organizeMutations(["setPayList"]),
+    // 计划支出点击切换到input模式
+    editMoney(row) {
+      this.showName.push(row.name);
     },
-    eventSelected(event, jsEvent, view) {
-      // 选中事件
-      console.log(event, jsEvent, "eventSelected");
+    // 确认修改计划支出 变回普通样式
+    sureMony(row) {
+      if (row.planMoney == null) {
+        row.planMoney = 0;
+      }
+      this.showName = this.showName.filter(item => {
+        return item != row.name;
+      });
+      this.setPayList(this.payList);
+      // this.$message.success("修改成功");
     },
-    viewRender(view, element) {
-      console.log(view, element, "viewRender");
+    // 实际支出点击切换到input模式
+    editthisMonth(row) {
+      this.showMonth.push(row.name);
     },
-    enter() {
-      this.$router.push("/explain");
+    // 确认修改实际支出 变回普通样式
+    surethisMonth(row) {
+      if (row.thisMonth == null) {
+        row.thisMonth = 0;
+      }
+      this.showMonth = this.showMonth.filter(item => {
+        return item != row.name;
+      });
+      this.setPayList(this.payList);
+      this.$message.success("修改成功");
+    },
+    // 添加更多 添加行
+    addPay() {
+      let row = {
+        actualMoney: 0,
+        lastMonth: 0,
+        name: null,
+        planMoney: null,
+        thisMonth: null
+      };
+      this.payList.push(row);
+    },
+    // 薪资构成添加后
+    sureName(val) {
+      if (this.addname !== "") {
+        val.name = this.addname;
+      } else {
+        val.name = "undefined";
+      }
+      this.showName.push(this.addname);
+      this.showMonth.push(this.addname);
+      this.addname = "";
+    },
+    // 切换月份
+    changeMonth() {
+      this.nowMonth = this.$dayjs(this.months).format("YYYY 年 MM 月");
     }
   },
-  mounted() {},
-
+  mounted() {
+    this.getPay();
+  },
   watch: {},
-  computed: {}
+  computed: {
+    ...organizeState(["payList", "paySum"])
+  }
 };
 </script>
 <style>
+.month-title {
+  margin: 40px 10px 20px;
+}
+.pay-tips {
+  background: #e5f2e1;
+  line-height: 50px;
+  padding: 0 15px;
+  font-size: 14px;
+}
+.el-table--border td,
+.el-table--border th {
+  border-right: 0px solid #fff;
+}
+.el-table {
+  margin: 30px 0 10px;
+}
+.add-more {
+  margin: 4px 0 20px 3%;
+}
+.c-blue {
+  color: #0285dc;
+}
 </style>
 
